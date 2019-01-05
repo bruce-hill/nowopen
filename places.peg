@@ -1,9 +1,9 @@
 file <- {| (place / ws? comment? %nl)* |} {.+}?
 place <- {|
     {:name: {word (ws word)*} :}
-    ws? ("(" {:tags: {| {word} ("," ws? {word})* |} :} ")")? ":"
+    ws? ("(" ws? {:tags: {| {tag} (ws? "," ws? {tag})* ws? |} :} ")")? ws? ":"
     ({:times: {|
-        ((ws? comment? %nl)+ "    " {| days ws? ("closed" / {:open: time :} "-" {:close: time :}) |})+
+        ((ws? comment? %nl)+ (%tab / " "^+2) ws? {| days ws? ("closed" / {:open: time :} "-" {:close: time :}) |})+
     |} :})
 |}
 
@@ -17,5 +17,6 @@ days <-
 time <- {|
     {:hour: {[0-9]+} :} (":" {:minute: {[0-9]+} :})? {:ampm: { "am" / "pm"} :}
 |}
-word <- [^%nl (),:#0-9-]+
-ws <- [ ]+
+tag <- word (" "+ word)*
+word <- [^%nl%tab (),:#0-9-]+
+ws <- [ %tab]+

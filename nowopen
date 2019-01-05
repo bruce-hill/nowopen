@@ -1,5 +1,38 @@
 #!/usr/bin/env lua
--- A program to display which places are currently open
+--
+-- A simple program to display which places are currently open
+-- 
+-- Usage: nowopen [tag1 tag2...]
+--
+-- Establishments matching any of the specified tags (prefix matching is used)
+-- and the amount of time till they close will be printed.
+--
+-- Business hours will be looked up in ~/.local/share/nowopen/businesshours or
+-- ~/.businesshours and have the format:
+--
+-- Joe's Diner (restaurant, diner):
+--     6am-1am
+--     fri-sat: 6am-3am
+--     sun: closed
+--
+
+local XDG_DATA_HOME = os.getenv("XDG_DATA_HOME") or "~/.local/share"
+local f = io.open(XDG_DATA_HOME..'/nowopen/businesshours') or io.open('~/.businesshours')
+if not f then
+    print("Could not find config file")
+    os.exit(1)
+end
+local place_text = f:read("*a")
+f:close()
+
+local raw_print = false
+for i=#arg,1,-1 do
+    if arg[i] == "-p" then
+        raw_print = true
+        table.remove(arg, i)
+    end
+end
+
 local lpeg = require('lpeg')
 local re = require('re')
 
@@ -17,25 +50,15 @@ local function secs(t)
 end
 
 local f = io.open('places.peg')
-local dsl = re.compile(f:read('*a'))
+local dsl = re.compile(f:read('*a'), {tab="\t"})
 f:close()
-
-local XDG_DATA_HOME = os.getenv("XDG_DATA_HOME") or "~/.local/share"
-local f = io.open(XDG_DATA_HOME..'/nowopen/open_hours') or io.open('~/.open_hours')
-if not f then
-    print("Could not find config file")
-    os.exit(1)
-end
-local place_text = f:read("*a")
 local places,err = dsl:match(place_text)
-f:close()
 if err then
     print("Failed to parse config file:")
     print(place_text:sub(1,#place_text-#err).."\x1b[31;7m"..err.."\x1b[0m")
     os.exit(1)
 end
     
-local colors = setmetatable({[0]=31,[1]=33}, {__index=function() return 32 end})
 local weekdays = {"sunday","monday","tuesday","wednesday","thursday","friday","saturday"}
 local function get_weekday(str)
     for i,w in ipairs(weekdays) do
@@ -79,24 +102,28 @@ for i,place in ipairs(places) do
     ::next_place::
 end
 
-local p = io.popen("tput cols")
-local cols = tonumber(p:read("*a"))
-p:close()
-local p = io.popen("tput lines")
-local rows = tonumber(p:read("*a"))
-p:close()
+local rows, cols = 0, 0
+    if not raw_print then
+    local p = io.popen("tput cols")
+    cols = tonumber(p:read("*a"))
+    p:close()
+    local p = io.popen("tput lines")
+    rows = tonumber(p:read("*a"))
+    p:close()
+end
 
-local output = io.popen("less -r", "w")
+local output = raw_print and io.output() or io.popen("less -r", "w")
 
 local function displaylen(str) return utf8.len((str:gsub("\x1b%[[0-9;]*m", ""))) end
 local function center(str, n) return (" "):rep((n-displaylen(str))//2)..str..(" "):rep((n-displaylen(str))//2) end
 local function lpad(str, n) return (" "):rep(n-displaylen(str))..str end
 
 local lines = {}
+local colors = setmetatable({[0]=31,[1]=33}, {__index=function() return 32 end})
 if #options == 0 then
-    table.insert(lines, center("Sorry, nothing's open", cols))
+    table.insert(lines, center("\x1b[1mSorry, nothing's open\x1b[0m", cols))
     table.insert(lines, "")
-    table.insert(lines, center(":(", cols))
+    table.insert(lines, center("¯\\_(ツ)_/¯", cols))
 else
     table.sort(options, function(o1, o2) return o1.until_close < o2.until_close end)
     local max_line = 0
