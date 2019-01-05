@@ -16,6 +16,8 @@ days <-
 
 time <- {|
     {:hour: {[0-9]+} :} (":" {:minute: {[0-9]+} :})? {:ampm: { "am" / "pm"} :}
+    / ("noon" {:hour: {~''->'12'~} :} {:ampm: {~''->'pm'~} :})
+    / ("midnight" {:hour: {~''->'12'~} :} {:ampm: {~''->'am'~} :})
 |}
 tag <- word (" "+ word)*
 word <- [^%nl%tab (),:#0-9-]+

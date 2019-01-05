@@ -85,11 +85,15 @@ for i,place in ipairs(places) do
         end
     end
     local function t(time)
-        local hour = tonumber(time.hour)
+        local hour24 = tonumber(time.hour)
         local minute = tonumber(time.minute or 0)
-        if time.ampm == 'pm' then hour = hour + 12 end
-        local t = os.time{hour=hour, min=minute, year=today.year, month=today.month, day=today.day}
-        if t < now then t = t + 24*60*60 end
+        if hour24 == 12 then
+            if time.ampm == 'am' then hour24 = hour24 - 12 end
+        else
+            if time.ampm == 'pm' then hour24 = hour24 + 12 end
+        end
+        local t = os.time{hour=hour24, min=minute, year=today.year, month=today.month, day=today.day}
+        while t < now do t = t + 24*60*60 end
         return t
     end
     if today_times and today_times.open then
