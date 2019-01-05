@@ -1,0 +1,118 @@
+#!/usr/bin/env lua
+-- A program to display which places are currently open
+local lpeg = require('lpeg')
+local re = require('re')
+
+local today = os.date("*t")
+local now = os.time(today)
+
+local function hours(t)
+    return math.floor(t/3600)
+end
+local function mins(t)
+    return math.floor((t/60) % 60)
+end
+local function secs(t)
+    return math.floor(t % 60)
+end
+
+local f = io.open('places.peg')
+local dsl = re.compile(f:read('*a'))
+f:close()
+
+local XDG_DATA_HOME = os.getenv("XDG_DATA_HOME") or "~/.local/share"
+local f = io.open(XDG_DATA_HOME..'/nowopen/open_hours') or io.open('~/.open_hours')
+if not f then
+    print("Could not find config file")
+    os.exit(1)
+end
+local place_text = f:read("*a")
+local places,err = dsl:match(place_text)
+f:close()
+if err then
+    print("Failed to parse config file:")
+    print(place_text:sub(1,#place_text-#err).."\x1b[31;7m"..err.."\x1b[0m")
+    os.exit(1)
+end
+    
+local colors = setmetatable({[0]=31,[1]=33}, {__index=function() return 32 end})
+local weekdays = {"sunday","monday","tuesday","wednesday","thursday","friday","saturday"}
+local function get_weekday(str)
+    for i,w in ipairs(weekdays) do
+        if w:sub(1,#str) == str then return i end
+    end
+end
+
+local options = {}
+for i,place in ipairs(places) do
+    if arg[1] then
+        for _,request_tag in ipairs(arg) do
+            for _,tag in ipairs(place.tags) do
+                if tag:sub(1,#request_tag) == request_tag then goto carry_on end
+            end
+        end
+        goto next_place
+        ::carry_on::
+    end
+    local today_times
+    for _,time in ipairs(place.times) do
+        if get_weekday(time.from) <= today.wday
+            and today.wday <= get_weekday(time.to or time.from) then
+            today_times = time
+        end
+    end
+    local function t(time)
+        local hour = tonumber(time.hour)
+        local minute = tonumber(time.minute or 0)
+        if time.ampm == 'pm' then hour = hour + 12 end
+        local t = os.time{hour=hour, min=minute, year=today.year, month=today.month, day=today.day}
+        if t < now then t = t + 24*60*60 end
+        return t
+    end
+    if today_times and today_times.open then
+        local until_open = t(today_times.open) - now
+        local until_close = t(today_times.close) - now
+        if until_close < until_open then
+            table.insert(options, {name=place.name, until_close=until_close})
+        end
+    end
+    ::next_place::
+end
+
+local p = io.popen("tput cols")
+local cols = tonumber(p:read("*a"))
+p:close()
+local p = io.popen("tput lines")
+local rows = tonumber(p:read("*a"))
+p:close()
+
+local output = io.popen("less -r", "w")
+
+local function displaylen(str) return utf8.len((str:gsub("\x1b%[[0-9;]*m", ""))) end
+local function center(str, n) return (" "):rep((n-displaylen(str))//2)..str..(" "):rep((n-displaylen(str))//2) end
+local function lpad(str, n) return (" "):rep(n-displaylen(str))..str end
+
+local lines = {}
+if #options == 0 then
+    table.insert(lines, center("Sorry, nothing's open", cols))
+    table.insert(lines, "")
+    table.insert(lines, center(":(", cols))
+else
+    table.sort(options, function(o1, o2) return o1.until_close < o2.until_close end)
+    local max_line = 0
+    for _,option in ipairs(options) do
+        local line = ("\027[%d;1m%23s:  %2s:%02d left\027[0m      "):format(
+            colors[hours(option.until_close)], option.name,
+            hours(option.until_close), mins(option.until_close))
+        if #line > max_line then max_line = displaylen(line) end
+        table.insert(lines, line)
+    end
+    for i, line in ipairs(lines) do lines[i] = center(lpad(line, max_line), cols) end
+    table.insert(lines, 1, center("\x1b[7m"..center("Open Now", max_line).."\x1b[0m", cols))
+    table.insert(lines, 2, "")
+end
+
+output:write(("\n"):rep((rows-#lines)//2))
+output:write(table.concat(lines, "\n"))
+output:write(("\n"):rep((rows-#lines)//2 - 2))
+output:close()
