@@ -1,0 +1,15 @@
+# Line comments with "#"
+Jimmy Pesto's Pizzeria (restaurant, pizza, delivery):
+    11am-midnight
+    fri-sat: 11am-1am
+
+Mario Bros Plumbing (plumbers):
+    7am-6:30pm
+    mon: closed
+
+American Panascope (medical equipment):
+    sun: noon-5pm
+    mon: 10am-6pm
+    tue-thu: 9am-8pm
+    fri: noon-6pm
+    sat: 10am-6pm

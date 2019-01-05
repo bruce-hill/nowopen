@@ -123,8 +123,8 @@ local function center(str, n) return (" "):rep((n-displaylen(str))//2)..str..(" 
 local function lpad(str, n) return (" "):rep(n-displaylen(str))..str end
 
 local lines = {}
-local colors = setmetatable({[0]=31,[1]=33}, {__index=function() return 32 end})
-if #options == 0 then
+local colors = setmetatable({[0]="\x1b[31;1m",[1]="\x1b[33;1m"}, {__index=function() return "\x1b[32;1m" end})
+if #options == 0 and not raw_print then
     table.insert(lines, center("\x1b[1mSorry, nothing's open\x1b[0m", cols))
     table.insert(lines, "")
     table.insert(lines, center("¯\\_(ツ)_/¯", cols))
@@ -132,18 +132,20 @@ else
     table.sort(options, function(o1, o2) return o1.until_close < o2.until_close end)
     local max_line = 0
     for _,option in ipairs(options) do
-        local line = ("\027[%d;1m%23s:  %2s:%02d left\027[0m      "):format(
-            colors[hours(option.until_close)], option.name,
-            hours(option.until_close), mins(option.until_close))
-        if #line > max_line then max_line = displaylen(line) end
+        local line = ("%s:  %2s:%02d left"):format(
+            option.name, hours(option.until_close), mins(option.until_close))
+        if not raw_print then line = "    "..colors[hours(option.until_close)]..line.."\x1b[0m    " end
+        if displaylen(line) > max_line then max_line = displaylen(line) end
         table.insert(lines, line)
     end
-    for i, line in ipairs(lines) do lines[i] = center(lpad(line, max_line), cols) end
-    table.insert(lines, 1, center("\x1b[7m"..center("Open Now", max_line).."\x1b[0m", cols))
-    table.insert(lines, 2, "")
+    if not raw_print then
+        for i, line in ipairs(lines) do lines[i] = center(lpad(line, max_line), cols) end
+        table.insert(lines, 1, center("\x1b[7m"..center("Open Now", max_line).."\x1b[0m", cols))
+        table.insert(lines, 2, "")
+    end
 end
 
-output:write(("\n"):rep((rows-#lines)//2))
+if not raw_print then output:write(("\n"):rep((rows-#lines)//2)) end
 output:write(table.concat(lines, "\n"))
-output:write(("\n"):rep((rows-#lines)//2 - 2))
+if not raw_print then output:write(("\n"):rep((rows-#lines)//2)) end
 output:close()
