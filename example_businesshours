@@ -1,4 +1,6 @@
-# Line comments with "#"
+# This is an example businesshours file
+# You should replace it with the business hours you want
+# and save it to ~/.local/share/nowopen/businesshours
 Jimmy Pesto's Pizzeria (restaurant, pizza, delivery):
     11am-midnight
     fri-sat: 11am-1am

@@ -2,11 +2,13 @@
 
 `nowopen` is a simple program to display which places are currently open.
 
-## Usage
-
-First, create a file with business hours in it at either `~/.local/share/nowopen/businesshours`
-(recommended) or `~/.businesshours`. An example businesshours file is provided.
-The format looks like:
+## Installing
+`sudo make install` to install, and `sudo make uninstall` to uninstall.
+You should also create a file to store business hours in at either
+`~/.local/share/nowopen/businesshours` (recommended) or `~/.businesshours`.
+An example businesshours file is provided, so you can get started by
+running `mkdir -p ~/.local/share/nowopen && cp example_businesshours ~/.local/share/nowopen/businesshours`.
+The businesshours format looks like:
 
 ```
 Mario Bros Plumbing (plumbers):
@@ -14,6 +16,7 @@ Mario Bros Plumbing (plumbers):
     sun: closed
 ```
 
+## Usage
 Once you have a businesshours file, run `nowopen [-p] [tag1 tag2...]`. Establishments
 matching any of the specified tags (prefix matching is used) and the amount of
 time till they close will be displayed. E.g. `nowopen plumber` will show how long
