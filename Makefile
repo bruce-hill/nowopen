@@ -25,7 +25,7 @@ uninstall:
 	fi; \
 	if [[ ! $$prefix ]]; then prefix="/usr/local"; fi; \
 	echo $$'\033[1mDeleting...\033[0m'; \
-	rm -rvf $$prefix/bin/nowopen $$prefix/share/man/man1/doc/nowopen.1; \
+	rm -rvf $$prefix/bin/nowopen $$prefix/share/man/man1/nowopen.1; \
 	xdg_data_home=$$XDG_DATA_HOME; \
 	if [[ ! $$xdg_data_home ]]; then xdg_data_home="~/.local/share"; fi; \
 	echo $$'\033[1mUninstallation complete.\033[0m'; \
