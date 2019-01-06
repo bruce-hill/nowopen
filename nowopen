@@ -30,6 +30,15 @@ for i=#arg,1,-1 do
     if arg[i] == "-p" then
         raw_print = true
         table.remove(arg, i)
+    elseif arg[i] == "-h" or arg[i] == "--help" then
+        print([[
+nowopen: show which businesses are now open.
+Usage: nowopen [-p] [--help] [tags...]
+    -p: Print plain text to stdout
+    --help: display this message
+    tags: if provided, only show businesses that match one of the given tags
+]])
+        os.exit(0)
     end
 end
 
