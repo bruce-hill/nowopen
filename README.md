@@ -2,6 +2,8 @@
 
 `nowopen` is a simple program to display which places are currently open.
 
+![Preview](https://bitbucket.org/spilt/nowopen/downloads/nowopen_preview.gif)
+
 ## Installing
 `sudo make install` to install, and `sudo make uninstall` to uninstall.
 You should also create a file to store business hours in at either
