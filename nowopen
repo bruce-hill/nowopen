@@ -63,7 +63,7 @@ local dsl = re.compile([=[
         ws? ("(" ws? {:tags: {| {tag} (ws? "," ws? {tag})* ws? |} :} ")")? ws? ":"
         ({:times: {|
             ((ws? comment? %nl)+ (%tab / " "^+2) ws?
-             {| days ws? ("closed" / {:open: time :} "-" {:close: time :}) |})+
+             {| days ws? ("closed" / (time_range (ws* "," ws* time_range)*)) |})+
         |} :})
     |}
     comment <- "#" [^%nl]*
@@ -71,6 +71,7 @@ local dsl = re.compile([=[
         ({:from: {word} :} "-" {:to: {word} :} ":")
        /({:from: {word} :} ":")
        /({:from:''->'sun':} {:to:''->'sat':})
+    time_range <- {| {:open: time :} "-" {:close: time :} |}
     time <- {|
         {:hour: {[0-9]+} :} (":" {:minute: {[0-9]+} :})? {:ampm: { "am" / "pm"} :}
         / ("noon" {:hour: {~''->'12'~} :} {:ampm: {~''->'pm'~} :})
@@ -124,11 +125,13 @@ for i,place in ipairs(places) do
         while t < now do t = t + 24*60*60 end
         return t
     end
-    if today_times and today_times.open then
-        local until_open = t(today_times.open) - now
-        local until_close = t(today_times.close) - now
-        if until_close < until_open then
-            table.insert(options, {name=place.name, until_close=until_close})
+    if today_times and today_times[1] then
+        for _, window in ipairs(today_times) do
+            local until_open = t(window.open) - now
+            local until_close = t(window.close) - now
+            if until_close < until_open then
+                table.insert(options, {name=place.name, until_close=until_close})
+            end
         end
     end
     ::next_place::
