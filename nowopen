@@ -26,9 +26,13 @@ local place_text = f:read("*a")
 f:close()
 
 local raw_print = false
+local randomize = false
 for i=#arg,1,-1 do
     if arg[i] == "-p" then
         raw_print = true
+        table.remove(arg, i)
+    elseif arg[i] == "-r" or arg[i] == "--randomize" then
+        randomize = true
         table.remove(arg, i)
     elseif arg[i] == "-h" or arg[i] == "--help" then
         print([[
@@ -160,7 +164,11 @@ if #options == 0 and not raw_print then
     table.insert(lines, "")
     table.insert(lines, center("¯\\_(ツ)_/¯", cols))
 else
-    table.sort(options, function(o1, o2) return o1.until_close < o2.until_close end)
+    if randomize then
+        options = {options[math.random(#options)]}
+    else
+        table.sort(options, function(o1, o2) return o1.until_close < o2.until_close end)
+    end
     local max_line = 0
     for _,option in ipairs(options) do
         local line = ("%s:  %2s:%02d left"):format(
@@ -171,7 +179,11 @@ else
     end
     if not raw_print then
         for i, line in ipairs(lines) do lines[i] = center(lpad(line, max_line), cols) end
-        table.insert(lines, 1, center("\x1b[7m"..center("Open Now", max_line).."\x1b[0m", cols))
+        if randomize then
+            table.insert(lines, 1, center("\x1b[7m"..center("Your Random Selection", max_line).."\x1b[0m", cols))
+        else
+            table.insert(lines, 1, center("\x1b[7m"..center("Open Now", max_line).."\x1b[0m", cols))
+        end
         table.insert(lines, 2, "")
     end
 end
