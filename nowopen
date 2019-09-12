@@ -19,7 +19,10 @@
 local XDG_DATA_HOME = os.getenv("XDG_DATA_HOME") or "~/.local/share"
 local f = io.open(XDG_DATA_HOME..'/nowopen/businesshours') or io.open('~/.businesshours')
 if not f then
-    print("Could not find config file")
+    print("Could not find config file.\n"
+        .."Please create a config file in either "
+        ..XDG_DATA_HOME.."/nowopen/businesshours or ~/.businesshours\n"
+        .."For an example, see the 'example_businesshours' file included with nowopen.")
     os.exit(1)
 end
 local place_text = f:read("*a")
