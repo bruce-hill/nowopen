@@ -2,7 +2,7 @@
 --
 -- A simple program to display which places are currently open
 -- 
--- Usage: nowopen [tag1 tag2...]
+-- Usage: nowopen [-r] [-p] [-w] [--help] [tag1 tag2...]
 --
 -- Establishments matching any of the specified tags (prefix matching is used)
 -- and the amount of time till they close will be printed.
@@ -17,6 +17,10 @@
 --
 
 local XDG_DATA_HOME = os.getenv("XDG_DATA_HOME") or "~/.local/share"
+if arg[1] == '-w' then
+    print(XDG_DATA_HOME..'/nowopen/businesshours')
+    os.exit(0)
+end
 local f = io.open(XDG_DATA_HOME..'/nowopen/businesshours') or io.open('~/.businesshours')
 if not f then
     print("Could not find config file.\n"
@@ -40,8 +44,10 @@ for i=#arg,1,-1 do
     elseif arg[i] == "-h" or arg[i] == "--help" then
         print([[
 nowopen: show which businesses are now open.
-Usage: nowopen [-p] [--help] [tags...]
+Usage: nowopen [-p] [-r] [-w] [--help] [tags...]
     -p: Print plain text to stdout
+    -r: Randomly pick one available option
+    -w: Print where the config file is and exit
     --help: display this message
     tags: if provided, only show businesses that match one of the given tags
 ]])
@@ -75,16 +81,16 @@ local dsl = re.compile([=[
     |}
     comment <- "#" [^%nl]*
     days <-
-        ({:from: {word} :} "-" {:to: {word} :} ":")
-       /({:from: {word} :} ":")
+        ({:from: {word} :} ws? "-" ws? {:to: {word} :} ws? ":")
+       /({:from: {word} :} ws? ":")
        /({:from:''->'sun':} {:to:''->'sat':})
-    time_range <- {| {:open: time :} "-" {:close: time :} |}
+    time_range <- {| {:open: time :} ws? "-" ws? {:close: time :} |}
     time <- {|
-        {:hour: {[0-9]+} :} (":" {:minute: {[0-9]+} :})? {:ampm: { "am" / "pm"} :}
+        {:hour: {[0-9]+} :} (":" {:minute: {[0-9]+} :})? ws? {:ampm: { "am" / "pm"} :}
         / ("noon" {:hour: {~''->'12'~} :} {:ampm: {~''->'pm'~} :})
         / ("midnight" {:hour: {~''->'12'~} :} {:ampm: {~''->'am'~} :})
     |}
-    tag <- word (" "+ word)*
+    tag <- word (ws word)*
     word <- [^%nl%tab (),:#0-9-]+
     ws <- [ %tab]+
 ]=], {tab="\t"})
@@ -98,7 +104,7 @@ end
 local weekdays = {"sunday","monday","tuesday","wednesday","thursday","friday","saturday"}
 local function get_weekday(str)
     for i,w in ipairs(weekdays) do
-        if w:sub(1,#str) == str then return i end
+        if w:sub(1,#str):lower() == str then return i end
     end
 end
 
