@@ -121,8 +121,9 @@ for i,place in ipairs(places) do
     end
     local today_times
     for _,time in ipairs(place.times) do
-        if get_weekday(time.from) <= today.wday
-            and today.wday <= get_weekday(time.to or time.from) then
+        local from, to = get_weekday(time.from), get_weekday(time.to or time.from)
+        if (from <= to and from <= today.wday and today.wday <= to) -- no wraparound (e.g. mon-wed)
+            or (from > to and (today.wday >= from or today.wday <= to)) then -- wraparound (e.g. fri-tues)
             today_times = time
         end
     end
