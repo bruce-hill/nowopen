@@ -81,8 +81,8 @@ local dsl = re.compile([=[
     |}
     comment <- "#" [^%nl]*
     days <-
-        ({:from: {word} :} ws? "-" ws? {:to: {word} :} ws? ":")
-       /({:from: {word} :} ws? ":")
+        ({:from: {[a-zA-Z]+} :} ws? "-" ws? {:to: {[a-zA-Z]+} :} ws? ":")
+       /({:from: {[a-zA-Z]+} :} ws? ":")
        /({:from:''->'sun':} {:to:''->'sat':})
     time_range <- {| {:open: time :} ws? "-" ws? {:close: time :} |}
     time <- {|
@@ -91,7 +91,7 @@ local dsl = re.compile([=[
         / ("midnight" {:hour: {~''->'12'~} :} {:ampm: {~''->'am'~} :})
     |}
     tag <- word (ws word)*
-    word <- [^%nl%tab (),:#0-9-]+
+    word <- [^%nl%tab (),:#&0-9-]+
     ws <- [ %tab]+
 ]=], {tab="\t"})
 local places,err = dsl:match(place_text)
