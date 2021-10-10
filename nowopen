@@ -91,7 +91,7 @@ local dsl = re.compile([=[
         / ("midnight" {:hour: {~''->'12'~} :} {:ampm: {~''->'am'~} :})
     |}
     tag <- word (ws word)*
-    word <- [^%nl%tab (),:#&0-9-]+
+    word <- [^%nl%tab (),:#-]+
     ws <- [ %tab]+
 ]=], {tab="\t"})
 local places,err = dsl:match(place_text)
