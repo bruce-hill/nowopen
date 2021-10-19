@@ -17,7 +17,7 @@
 --
 
 local XDG_DATA_HOME = os.getenv("XDG_DATA_HOME") or "~/.local/share"
-if arg[1] == '-w' then
+if arg[1] == '-w' or arg[1] == '--where' then
     print(XDG_DATA_HOME..'/nowopen/businesshours')
     os.exit(0)
 end
@@ -35,16 +35,16 @@ f:close()
 local raw_print = false
 local randomize = false
 for i=#arg,1,-1 do
-    if arg[i] == "-p" then
+    if arg[i] == "-p" or arg[i] == "--plain" then
         raw_print = true
         table.remove(arg, i)
-    elseif arg[i] == "-r" or arg[i] == "--randomize" then
+    elseif arg[i] == "-r" or arg[i] == "--random" then
         randomize = true
         table.remove(arg, i)
     elseif arg[i] == "-h" or arg[i] == "--help" then
         print([[
 nowopen: show which businesses are now open.
-Usage: nowopen [-p] [-r] [-w] [--help] [tags...]
+Usage: nowopen [-p|--plain] [-r|--random] [-w|--where] [-h|--help] [tags...]
     -p: Print plain text to stdout
     -r: Randomly pick one available option
     -w: Print where the config file is and exit
@@ -94,6 +94,7 @@ local dsl = re.compile([=[
     word <- [^%nl%tab (),:#-]+
     ws <- [ %tab]+
 ]=], {tab="\t"})
+
 local places,err = dsl:match(place_text)
 if err then
     print("Failed to parse config file:")
@@ -104,7 +105,7 @@ end
 local weekdays = {"sunday","monday","tuesday","wednesday","thursday","friday","saturday"}
 local function get_weekday(str)
     for i,w in ipairs(weekdays) do
-        if w:sub(1,#str):lower() == str then return i end
+        if w:sub(1,#str):lower() == str:lower() then return i end
     end
 end
 
@@ -119,7 +120,7 @@ for i,place in ipairs(places) do
         goto next_place
         ::carry_on::
     end
-    local today_times
+    local today_times = nil
     for _,time in ipairs(place.times) do
         local from, to = get_weekday(time.from), get_weekday(time.to or time.from)
         if (from <= to and from <= today.wday and today.wday <= to) -- no wraparound (e.g. mon-wed)
@@ -152,7 +153,7 @@ for i,place in ipairs(places) do
 end
 
 local rows, cols = 0, 0
-    if not raw_print then
+if not raw_print then
     local p = io.popen("tput cols")
     cols = tonumber(p:read("*a"))
     p:close()
@@ -202,4 +203,5 @@ end
 if not raw_print then output:write(("\n"):rep((rows-#lines)//2)) end
 output:write(table.concat(lines, "\n"))
 if not raw_print then output:write(("\n"):rep((rows-#lines)//2)) end
+if raw_print then output:write("\n") end
 output:close()
