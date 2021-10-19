@@ -2,7 +2,7 @@
 --
 -- A simple program to display which places are currently open
 -- 
--- Usage: nowopen [-r] [-p] [-w] [--help] [tag1 tag2...]
+-- Usage: nowopen [-r|--random] [-p|--plain] [-w|--where] [-h|--help] [tag1 tag2...]
 --
 -- Establishments matching any of the specified tags (prefix matching is used)
 -- and the amount of time till they close will be printed.
