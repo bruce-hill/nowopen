@@ -2,7 +2,7 @@
 --
 -- A simple program to display which places are currently open
 -- 
--- Usage: nowopen [-r|--random] [-p|--plain] [-w|--where] [-h|--help] [tag1 tag2...]
+-- Usage: nowopen [-r|--random] [-p|--plain] [-w|--where] [-e|--edit] [-h|--help] [tag1 tag2...]
 --
 -- Establishments matching any of the specified tags (prefix matching is used)
 -- and the amount of time till they close will be printed.
@@ -48,10 +48,11 @@ for i=#arg,1,-1 do
     elseif arg[i] == "-h" or arg[i] == "--help" then
         print([[
 nowopen: show which businesses are now open.
-Usage: nowopen [-p|--plain] [-r|--random] [-w|--where] [-h|--help] [tags...]
+Usage: nowopen [-p|--plain] [-r|--random] [-w|--where] [-e|--edit] [-h|--help] [tags...]
     -p: Print plain text to stdout
     -r: Randomly pick one available option
     -w: Print where the config file is and exit
+    -e: Edit the nowopen file and exit
     --help: display this message
     tags: if provided, only show businesses that match one of the given tags
 ]])
