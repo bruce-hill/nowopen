@@ -20,6 +20,10 @@ local XDG_DATA_HOME = os.getenv("XDG_DATA_HOME") or "~/.local/share"
 if arg[1] == '-w' or arg[1] == '--where' then
     print(XDG_DATA_HOME..'/nowopen/businesshours')
     os.exit(0)
+elseif arg[1] == '-e' or arg[1] == '--edit' then
+    local editor = os.getenv("EDITOR") or "vim"
+    os.execute(editor.." "..XDG_DATA_HOME..'/nowopen/businesshours')
+    os.exit(0)
 end
 local f = io.open(XDG_DATA_HOME..'/nowopen/businesshours') or io.open('~/.businesshours')
 if not f then
