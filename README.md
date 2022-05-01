@@ -30,5 +30,6 @@ will show how long "Mario Bros Plumbing" is open.
 
 - `-h`/`--help`: Print the usage and exit.
 - `-w`/`--where`: Print where the config file is stored and exit.
+- `-e`/`--edit`: Edit the config file and exit.
 - `-r`/`--random`: Pick a single random option.
 - `-p`/`--plain`: Print the results to stdout in plain text.
