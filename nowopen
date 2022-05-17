@@ -174,7 +174,6 @@ local function center(str, n) return (" "):rep((n-displaylen(str))//2)..str..(" 
 local function lpad(str, n) return (" "):rep(n-displaylen(str))..str end
 
 local lines = {}
-local colors = setmetatable({[0]="\x1b[31;1m",[1]="\x1b[33;1m"}, {__index=function() return "\x1b[32;1m" end})
 if #options == 0 and not raw_print then
     table.insert(lines, center("\x1b[1mSorry, nothing's open\x1b[0m", cols))
     table.insert(lines, "")
@@ -190,7 +189,19 @@ else
     for _,option in ipairs(options) do
         local line = ("%s:  %2s:%02d left"):format(
             option.name, hours(option.until_close), mins(option.until_close))
-        if not raw_print then line = "    "..colors[hours(option.until_close)]..line.."\x1b[0m    " end
+        if not raw_print then
+            local color
+            if hours(option.until_close) >= 2 then
+                color = "\x1b[32;1m"
+            elseif hours(option.until_close) >= 1 then
+                color = "\x1b[33;1m"
+            elseif mins(option.until_close) > 15 then
+                color = "\x1b[31;1m"
+            else
+                color = "\x1b[31;2m"
+            end
+            line = "    "..color..line.."\x1b[0m    "
+        end
         if displaylen(line) > max_line then max_line = displaylen(line) end
         table.insert(lines, line)
     end
