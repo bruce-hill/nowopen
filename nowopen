@@ -89,7 +89,7 @@ local dsl = re.compile([=[
         ({:from: {[a-zA-Z]+} :} ws? "-" ws? {:to: {[a-zA-Z]+} :} ws? ":")
        /({:from: {[a-zA-Z]+} :} ws? ":")
        /({:from:''->'sun':} {:to:''->'sat':})
-    time_range <- {| {:open: time :} ws? "-" ws? {:close: time :} |}
+    time_range <- {| {:all_day: ("all day" / "24" ("hr"/"hour") "s"?):} / ({:open: time :} ws? "-" ws? {:close: time :}) |}
     time <- {|
         {:hour: {[0-9]+} :} (":" {:minute: {[0-9]+} :})? ws? {:ampm: { "am" / "pm"} :}
         / ("noon" {:hour: {~''->'12'~} :} {:ampm: {~''->'pm'~} :})
@@ -147,10 +147,14 @@ for i,place in ipairs(places) do
     end
     if today_times and today_times[1] then
         for _, window in ipairs(today_times) do
-            local until_open = t(window.open) - now
-            local until_close = t(window.close) - now
-            if until_close < until_open then
-                table.insert(options, {name=place.name, until_close=until_close})
+            if window.all_day then
+                table.insert(options, {name=place.name, until_close=math.huge})
+            else
+                local until_open = t(window.open) - now
+                local until_close = t(window.close) - now
+                if until_close < until_open then
+                    table.insert(options, {name=place.name, until_close=until_close})
+                end
             end
         end
     end
@@ -187,8 +191,13 @@ else
     end
     local max_line = 0
     for _,option in ipairs(options) do
-        local line = ("%s:  %2s:%02d left"):format(
-            option.name, hours(option.until_close), mins(option.until_close))
+        local line
+        if option.until_close >= math.huge then
+            line = ("%s:   all day  "):format(option.name)
+        else
+            line = ("%s:  %2s:%02d left"):format(
+                option.name, hours(option.until_close), mins(option.until_close))
+        end
         if not raw_print then
             local color
             if hours(option.until_close) >= 2 then
