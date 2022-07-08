@@ -114,16 +114,23 @@ local function get_weekday(str)
     end
 end
 
+local function matches_tags(place, tags)
+    for _,request_tag in ipairs(tags) do
+        for _,tag in ipairs(place.tags) do
+            if tag:sub(1,#request_tag) == request_tag then goto next_tag end
+        end
+        if true then return false end
+        ::next_tag::
+    end
+    return true
+end
+
 local options = {}
 for i,place in ipairs(places) do
     if arg[1] then
-        for _,request_tag in ipairs(arg) do
-            for _,tag in ipairs(place.tags) do
-                if tag:sub(1,#request_tag) == request_tag then goto carry_on end
-            end
+        if not matches_tags(place, arg) then
+            goto next_place
         end
-        goto next_place
-        ::carry_on::
     end
     local today_times = nil
     for _,time in ipairs(place.times) do
