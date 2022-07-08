@@ -127,10 +127,8 @@ end
 
 local options = {}
 for i,place in ipairs(places) do
-    if arg[1] then
-        if not matches_tags(place, arg) then
-            goto next_place
-        end
+    if not matches_tags(place, arg) then
+        goto next_place
     end
     local today_times = nil
     for _,time in ipairs(place.times) do
