@@ -16,7 +16,8 @@
 --     sun: closed
 --
 
-local XDG_DATA_HOME = os.getenv("XDG_DATA_HOME") or "~/.local/share"
+local HOME = os.getenv("HOME")
+local XDG_DATA_HOME = os.getenv("XDG_DATA_HOME") or (HOME.."/.local/share")
 if arg[1] == '-w' or arg[1] == '--where' then
     print(XDG_DATA_HOME..'/nowopen/businesshours')
     os.exit(0)
@@ -25,7 +26,7 @@ elseif arg[1] == '-e' or arg[1] == '--edit' then
     os.execute(editor.." "..XDG_DATA_HOME..'/nowopen/businesshours')
     os.exit(0)
 end
-local f = io.open(XDG_DATA_HOME..'/nowopen/businesshours') or io.open('~/.businesshours')
+local f = io.open(XDG_DATA_HOME..'/nowopen/businesshours') or io.open(HOME..'/.businesshours')
 if not f then
     print("Could not find config file.\n"
         .."Please create a config file in either "
