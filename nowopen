@@ -115,13 +115,19 @@ local function get_weekday(str)
     end
 end
 
+local function matches_tag(place, request_tag)
+    if place.name:sub(1,#request_tag):lower() == request_tag:lower() then return true end
+    for _,tag in ipairs(place.tags) do
+        if tag:sub(1,#request_tag):lower() == request_tag:lower() then return true end
+    end
+    return false
+end
+
 local function matches_tags(place, tags)
     for _,request_tag in ipairs(tags) do
-        for _,tag in ipairs(place.tags) do
-            if tag:sub(1,#request_tag) == request_tag then goto next_tag end
+        if not matches_tag(place, request_tag) then
+            return false
         end
-        if true then return false end
-        ::next_tag::
     end
     return true
 end
