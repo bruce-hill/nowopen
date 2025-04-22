@@ -93,8 +93,8 @@ local dsl = re.compile([=[
     time_range <- {| {:all_day: ("all day" / "24" ("hr"/"hour") "s"?):} / ({:open: time :} ws? "-" ws? {:close: time :}) |}
     time <- {|
         {:hour: {[0-9]+} :} (":" {:minute: {[0-9]+} :})? ws? {:ampm: { "am" / "pm"} :}
-        / ("noon" {:hour: {~''->'12'~} :} {:ampm: {~''->'pm'~} :})
-        / ("midnight" {:hour: {~''->'12'~} :} {:ampm: {~''->'am'~} :})
+        / ({:hour: {~"noon"->'12'~} :} {:ampm: {~''->'pm'~} :})
+        / ({:hour: {~"midnight"->'12'~} :} {:ampm: {~''->'am'~} :})
     |}
     tag <- word (ws word)*
     word <- [^%nl%tab (),:#-]+
@@ -107,18 +107,22 @@ if err then
     print(place_text:sub(1,#place_text-#err).."\x1b[31;7m"..err.."\x1b[0m")
     os.exit(1)
 end
-    
+
+function string.matches_prefix(str, prefix)
+    return str:sub(1,#prefix):lower() == prefix:lower()
+end
+
 local weekdays = {"sunday","monday","tuesday","wednesday","thursday","friday","saturday"}
 local function get_weekday(str)
     for i,w in ipairs(weekdays) do
-        if w:sub(1,#str):lower() == str:lower() then return i end
+        if w:matches_prefix(str) then return i end
     end
 end
 
 local function matches_tag(place, request_tag)
-    if place.name:sub(1,#request_tag):lower() == request_tag:lower() then return true end
+    if place.name:matches_prefix(request_tag) then return true end
     for _,tag in ipairs(place.tags) do
-        if tag:sub(1,#request_tag):lower() == request_tag:lower() then return true end
+        if tag:matches_prefix(request_tag) then return true end
     end
     return false
 end
