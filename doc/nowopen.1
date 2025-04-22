@@ -4,7 +4,7 @@
 .SH NAME
 nowopen \- Display which businesses are now open.
 .SH SYNOPSIS
-\fBnowopen\fR [ \fI-p\fR ] [ \fI--help\fR ] [ \fItags...\fR ]
+\fBnowopen\fR [ \fI-p\fR|\fI--plain\fR ] [ \fI-r\fR|\fI--random\fR ] [ \fI--help\fR ] [ \fItags...\fR ]
 .SH DESCRIPTION
 \fBnowopen\fR will display currently open businesses and how long until they
 close. It uses data from either \fB~/.local/share/nowopen/businesshours\fR
@@ -12,9 +12,18 @@ or \fB~/.businesshours\fR.
 
 .SH OPTIONS
 .TP
-.B \-p
+.B \-p, \-\-plain
 Display output in plain text to stdout instead of using a temporary display
 with color.
+.TP
+.B \-r, \-\-random
+Choose a random currently open place.
+.TP
+.B \-w, \-\-where
+Print where your businesshours file is located.
+.TP
+.B \-e, \-\-edit
+Edit your businesshours file with your \fB$EDITOR\fR.
 .TP
 .B \--help
 Print the command line usage.
