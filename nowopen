@@ -76,7 +76,7 @@ end
 
 local re = require('re')
 local dsl = re.compile([=[
-    file <- {| (place / ws? comment? %nl)* |} {.+}?
+    file <- {| (place / ws? comment? %nl)* |} {[^%nl]+ (!(%nl %nl) .)*}? .*
     place <- {|
         {:name: {word (ws word)*} :}
         ws? ("(" ws? {:tags: {| {tag} (ws? "," ws? {tag})* ws? |} :} ")")? ws? ":"
@@ -97,14 +97,14 @@ local dsl = re.compile([=[
         / ({:hour: {~"midnight"->'12'~} :} {:ampm: {~''->'am'~} :})
     |}
     tag <- word (ws word)*
-    word <- [^%nl%tab (),:#-]+
+    word <- [^%nl%tab (),:#]+
     ws <- [ %tab]+
 ]=], {tab="\t"})
 
 local places,err = dsl:match(place_text)
 if err then
     print("Failed to parse config file:")
-    print(place_text:sub(1,#place_text-#err).."\x1b[31;7m"..err.."\x1b[0m")
+    print("\x1b[31;7m"..err.."\x1b[0m")
     os.exit(1)
 end
 
