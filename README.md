@@ -2,7 +2,7 @@
 
 `nowopen` is a simple program to display which places are currently open.
 
-![Preview](https://bitbucket.org/spilt/nowopen/downloads/nowopen_preview.gif)
+![Preview](nowopen_preview.gif)
 
 ## Installing
 
